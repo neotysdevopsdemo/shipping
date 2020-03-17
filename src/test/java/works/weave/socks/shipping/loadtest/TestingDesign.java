@@ -24,9 +24,9 @@ public class TestingDesign extends BaseNeoLoadDesign {
 
     @java.lang.Override
     public void createVariables() {
-        final ConstantVariable server = createConstantVariable("host", "35.180.172.93");
+        final ConstantVariable server = createConstantVariable("host", "shipping,");
         final ConstantVariable port = createConstantVariable("port", "80");
-        final ConstantVariable cartserver = createConstantVariable("carts_host", "carts.jx-staging.35.233.18.9.nip.io");
+        final ConstantVariable cartserver = createConstantVariable("carts_host", "shipping");
         final ConstantVariable cartsport = createConstantVariable("carts_port", "80");
         //TODO take care about file path, perhaps we should use a mechanism to copy the source file to the NeoLoad project folder ?
         final ConstantVariable basicPath = createConstantVariable("basicPath", "/");
