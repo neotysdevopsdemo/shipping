@@ -96,20 +96,9 @@ pipeline {
                          -e SCENARIO_NAME=Shipping_Load \
                          -e CONTROLLER_ZONE_ID=defaultzone \
                          -e LG_ZONE_IDS=defaultzone:1 \
-                         --network ${APP_NAME}  \
+                         --network ${APP_NAME} --user root \
                           neotys/neoload-web-test-launcher:latest"
-          /*script {
-              neoloadRun executable: '/home/neoload/neoload/bin/NeoLoadCmd',
-                      project: "$WORKSPACE/target/neoload/Shipping_NeoLoad/Shipping_NeoLoad.nlp",
-                      testName: 'FuncCheck_shipping_${VERSION}_${BUILD_NUMBER}',
-                      testDescription: 'FuncCheck_shipping_${VERSION}_${BUILD_NUMBER}',
-                      commandLineOption: "-nlweb -L  Population_ShippingUserPath=$WORKSPACE/infrastructure/infrastructure/neoload/lg/remote.txt -L Population_Dynatrace_Integration=$WORKSPACE/infrastructure/infrastructure/neoload/lg/local.txt -nlwebToken $NLAPIKEY -variables carts_host=shipping,carts_port=80,shippingPath=${SHIPPINGURI}",
-                      scenario: 'Shipping_Load', sharedLicense: [server: 'NeoLoad Demo License', duration: 2, vuCount: 200],
-                      trendGraphs: [
-                              [name: 'Limit test Shipping API Response time', curve: ['ShippingUserPath>Actions>Shipping'], statistic: 'average'],
-                              'ErrorRate'
-                      ]
-          }*/
+
 
 
 
