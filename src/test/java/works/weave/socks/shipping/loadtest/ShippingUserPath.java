@@ -2,11 +2,16 @@ package works.weave.socks.shipping.loadtest;
 
 import com.google.common.collect.ImmutableList;
 import com.neotys.neoload.model.repository.*;
+import com.neotys.neoload.model.v3.project.server.Server;
+import com.neotys.neoload.model.v3.project.userpath.ImmutableRequest;
+import com.neotys.neoload.model.v3.project.userpath.ThinkTime;
+import com.neotys.neoload.model.v3.project.variable.Variable;
 import com.neotys.testing.framework.BaseNeoLoadDesign;
 import com.neotys.testing.framework.BaseNeoLoadUserPath;
 
-import java.util.List;
+import java.util.Optional;
 
+import static com.neotys.testing.framework.utils.NeoLoadHelper.variabilize;
 import static java.util.Collections.emptyList;
 
 
@@ -16,27 +21,27 @@ public class ShippingUserPath extends BaseNeoLoadUserPath {
     }
 
     @Override
-    public UserPath createVirtualUser(BaseNeoLoadDesign baseNeoLoadDesign) {
-        final Server server = baseNeoLoadDesign.getServerByName("Carts_Server");
-        final ConstantVariable constantpath= (ConstantVariable) baseNeoLoadDesign.getVariableByName("shippingPath");
+    public com.neotys.neoload.model.v3.project.userpath.UserPath createVirtualUser(BaseNeoLoadDesign baseNeoLoadDesign) {
+        final Server server = baseNeoLoadDesign.getServerByName("carts_host");
+        final Variable constantpath= baseNeoLoadDesign.getVariableByName("shippingPath");
         final String jsonPayload="{\n" +
                 "    \"id\":\"42\",\n" +
                 "    \"name\":\"ArthurDent\"\n" +
                 " }";
-        final List<Header> headerList= ImmutableList.of(
+        final ImmutableList<com.neotys.neoload.model.v3.project.userpath.Header> headerList= ImmutableList.of(
                 header("Cache-Control","no-cache"),
                 header("Content-Type","application/json"),
                 header("json","true")
         );
-        final PostRequest postRequest = postTextBuilderWithHeaders(server,headerList, variabilize(constantpath),jsonPayload,emptyList(),emptyList()).build();
+        final ImmutableRequest postRequest = postTextBuilderWithHeaders(server,headerList, variabilize(constantpath),emptyList(),jsonPayload,emptyList(),Optional.empty()).build();
 
-        final Delay delay = thinkTime(250);
-        final ImmutableContainerForMulti actionsContainer = actionsContainerBuilder()
-                .addChilds(container("Shipping", postRequest, delay))
+        final ThinkTime delay = thinkTime(250);
+        final com.neotys.neoload.model.v3.project.userpath.ImmutableContainer actionsContainer = actionsContainerBuilder()
+                .addSteps(container("Shipping", Optional.empty(), postRequest, delay))
                 .build();
 
         return userPathBuilder("ShippingUserPath")
-                .actionsContainer(actionsContainer)
+                .actions(actionsContainer)
                 .build();
     }
 }
