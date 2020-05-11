@@ -27,7 +27,6 @@
         <dynatraceApiKey>aZMHwCI3QKe7YhK7MmEGC</dynatraceApiKey>
         <tags>shippping</tags>
         <outPutReferenceFile>/home/hrexed/dynatrace_smarscape.json</outPutReferenceFile>
-        <dataExchangeApiUrl>http://localhost:7400/DataExchange/v1/Service.svc/</dataExchangeApiUrl>
         <jsonAnomalieDetectionFile></jsonAnomalieDetectionFile>
         <customActionPath>lib/DynatraceIntegration-2.0.11-SNAPSHOT.jar</customActionPath>
     </properties>
