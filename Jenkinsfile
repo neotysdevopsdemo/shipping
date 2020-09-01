@@ -14,11 +14,9 @@ pipeline {
     TAG_STAGING = "${TAG}-stagging:${VERSION}"
     NL_DT_TAG="app:${env.APP_NAME},environment:dev"
     SHIPPING_ANOMALIEFILE="$WORKSPACE/monspec/shipping_anomalieDection.json"
-    DYNATRACEID="${env.DT_ACCOUNTID}.live.dynatrace.com"
+    DYNATRACEID="https://${env.DT_ACCOUNTID}.live.dynatrace.com/"
     DYNATRACEAPIKEY="${env.DT_API_TOKEN}"
     NLAPIKEY="${env.NL_WEB_API_KEY}"
-    OUTPUTSANITYCHECK="$WORKSPACE/infrastructure/sanitycheck.json"
-    DYNATRACEPLUGINPATH="$WORKSPACE/lib/DynatraceIntegration-3.0.1-SNAPSHOT.jar"
     DOCKER_COMPOSE_TEMPLATE="$WORKSPACE/infrastructure/infrastructure/neoload/docker-compose.template"
     DOCKER_COMPOSE_LG_FILE = "$WORKSPACE/infrastructure/infrastructure/neoload/docker-compose-neoload.yml"
     BASICCHECKURI="/health"
@@ -39,7 +37,7 @@ pipeline {
         // checkout scm
 
 
-            sh "mvn -B clean package -DdynatraceId=$DYNATRACEID -DneoLoadWebAPIKey=$NLAPIKEY -DdynatraceApiKey=$DYNATRACEAPIKEY -Dtags=${NL_DT_TAG} -DoutPutReferenceFile=$OUTPUTSANITYCHECK -DcustomActionPath=$DYNATRACEPLUGINPATH -DjsonAnomalieDetectionFile=$SHIPPING_ANOMALIEFILE"
+            sh "mvn -B clean package -DdynatraceURL=$DYNATRACEID -DneoLoadWebAPIKey=$NLAPIKEY -DdynatraceApiKey=$DYNATRACEAPIKEY -DdynatraceTags==${NL_DT_TAG} -DjsonAnomalieDetectionFile=$SHIPPING_ANOMALIEFILE"
 
       }
     }
@@ -83,26 +81,75 @@ pipeline {
                                        }
 
                            }
+     stage('NeoLoad Test')
+        {
+         agent {
+         docker {
+             image 'python:3-alpine'
+             reuseNode true
+          }
 
-    stage('Run functional check in dev') {
+            }
+        stages {
+             stage('Get NeoLoad CLI') {
+                          steps {
+                            withEnv(["HOME=${env.WORKSPACE}"]) {
 
-      steps {
+                             sh '''
+                                  export PATH=~/.local/bin:$PATH
+                                  pip3 install neoload
+                                  neoload --version
+                              '''
 
-       sleep 90
-       sh "docker run --rm \
-                         -v $WORKSPACE/target/neoload/Shipping_NeoLoad/:/neoload-project \
-                         -e NEOLOADWEB_TOKEN=$NLAPIKEY \
-                         -e TEST_RESULT_NAME=FuncCheck_shipping_${VERSION}_${BUILD_NUMBER} \
-                         -e SCENARIO_NAME=Shipping_Load \
-                         -e CONTROLLER_ZONE_ID=defaultzone \
-                         -e LG_ZONE_IDS=defaultzone:1 \
-                         --network ${APP_NAME} --user root \
-                          neotys/neoload-web-test-launcher:latest"
+                            }
+                          }
+             }
+            stage('Run functional check in dev') {
+
+              steps {
+
+               sleep 90
 
 
+              sh """
+                         export PATH=~/.local/bin:$PATH
+                         neoload \
+                         login --workspace "Default Workspace" $NLAPIKEY \
+                         test-settings  --zone defaultzone --scenario Shipping_Load  use ShippingDynatrace \
+                         project --path  $WORKSPACE/target/neoload/Shipping_NeoLoad/ upload
+                """
 
 
-      }
+              }
+            }
+            stage('Run Test') {
+                      steps {
+                        withEnv(["HOME=${env.WORKSPACE}"]) {
+                          sh """
+                               export PATH=~/.local/bin:$PATH
+                               neoload run \
+                              --return-0 \
+                                ShippingDynatrace
+                             """
+                        }
+                      }
+             }
+             stage('Generate Test Report') {
+                      steps {
+                        withEnv(["HOME=${env.WORKSPACE}"]) {
+                            sh """
+                                 export PATH=~/.local/bin:$PATH
+                                 neoload test-results junitsla
+                               """
+                        }
+                      }
+                      post {
+                          always {
+                              junit 'junit-sla.xml'
+                          }
+                      }
+            }
+        }
     }
     stage('Mark artifact for staging namespace') {
 
