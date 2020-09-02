@@ -107,18 +107,18 @@ pipeline {
             stage('Run functional check in dev') {
 
               steps {
+                 withEnv(["HOME=${env.WORKSPACE}"]) {
+                   sleep 90
 
-               sleep 90
 
-
-              sh """
-                         export PATH=~/.local/bin:$PATH
-                         neoload \
-                         login --workspace "Default Workspace" $NLAPIKEY \
-                         test-settings  --zone defaultzone --scenario Shipping_Load  use ShippingDynatrace \
-                         project --path  $WORKSPACE/target/neoload/Shipping_NeoLoad/ upload
-                """
-
+                  sh """
+                             export PATH=~/.local/bin:$PATH
+                             neoload \
+                             login --workspace "Default Workspace" $NLAPIKEY \
+                             test-settings  --zone defaultzone --scenario Shipping_Load  use ShippingDynatrace \
+                             project --path  $WORKSPACE/target/neoload/Shipping_NeoLoad/ upload
+                    """
+                }
 
               }
             }
