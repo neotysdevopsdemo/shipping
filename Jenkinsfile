@@ -12,7 +12,7 @@ pipeline {
     TAG = "neotysdevopsdemo/${APP_NAME}"
     TAG_DEV = "${TAG}:DEV-${VERSION}"
     TAG_STAGING = "${TAG}-stagging:${VERSION}"
-    NL_DT_TAG="app:${env.APP_NAME},environment:dev"
+    NL_DT_TAG="app:${env.APP_NAME}"
     SHIPPING_ANOMALIEFILE="$WORKSPACE/monspec/shipping_anomalieDection.json"
     DYNATRACEID="https://${env.DT_ACCOUNTID}.live.dynatrace.com/"
     DYNATRACEAPIKEY="${env.DT_API_TOKEN}"
